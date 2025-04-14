@@ -31,7 +31,7 @@ class HTBHTMLExtractor(BaseHTMLExtractor):
         if questions:
             result["questions"] = questions
         return result
-    
+
     def find_main_content_container(self):
         """Find the main content container in HackTheBox Academy HTML.
         Returns:
@@ -61,7 +61,7 @@ class HTBHTMLExtractor(BaseHTMLExtractor):
             if container:
                 return container
         return None
-    
+
     def extract_questions(self):
         """Extract questions from HackTheBox Academy pages.
         Returns:
@@ -84,7 +84,17 @@ class HTBHTMLExtractor(BaseHTMLExtractor):
         return questions
 
 
-def extract_content_from_html(html_content):
-    """Helper function to extract content from HTML."""
-    extractor = HTBHTMLExtractor(html_content)
+def extract_content_from_html(html_content, base_url=None, download_images=True, image_output_dir='images'):
+    """Helper function to extract content from HTML.
+
+    Args:
+        html_content (str): HTML content to parse
+        base_url (str, optional): Base URL for resolving relative image URLs
+        download_images (bool): Whether to download images
+        image_output_dir (str): Directory to save downloaded images
+
+    Returns:
+        dict: Extracted content
+    """
+    extractor = HTBHTMLExtractor(html_content, base_url, download_images, image_output_dir)
     return extractor.extract_content()

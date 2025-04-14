@@ -62,9 +62,17 @@ def format_list(item):
 
 def format_image(item):
     """Format an image item"""
-    filename = item['src'].split('/')[-1] 
-    return [f"[Image: {item['alt']} ({filename})]", ""]
-    
+    # Get the filename from either the source URL or local path
+    if 'local_path' in item and item['local_path']:
+        # Use the local path if available
+        image_ref = item['local_path']
+        filename = image_ref.split('/')[-1].split('\\')[-1]  # Handle both Unix and Windows paths
+        return [f"![{item['alt']}]({image_ref})", ""]
+    else:
+        # Fall back to just showing the filename from the source URL
+        filename = item['src'].split('/')[-1]
+        return [f"[Image: {item['alt']} ({filename})]", ""]
+
 def fill_in_table(item):
     """Fill in table item"""
     result = []

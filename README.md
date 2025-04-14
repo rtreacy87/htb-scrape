@@ -11,6 +11,7 @@ HTB-Scrape is a utility that extracts structured content from HackTheBox Academy
 - Extract content from local HTML files or directly from URLs
 - Parse HackTheBox Academy's specific HTML structure
 - Extract various content types (headings, paragraphs, code blocks, lists, images, tables, alerts)
+- Download and save images from HTML content
 - Extract questions from modules
 - Output in plain text (formatted for readability) or JSON
 - Modular and extensible design
@@ -78,6 +79,12 @@ python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --
 
 # Save output to a file
 python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --output output.txt
+
+# Download images from HTML content
+python htb_scraper.py --file path/to/file.html --download-images
+
+# Specify a custom directory for downloaded images
+python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --image-dir custom_images
 ```
 
 ### Example Output

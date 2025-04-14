@@ -1,5 +1,6 @@
 import json
 import argparse
+import os
 import requests
 from urllib.parse import urlparse
 from src.HTBHTMLExtractor import extract_content_from_html
@@ -17,6 +18,11 @@ def parse_arguments():
     parser.add_argument('--output', '-o', help='Output file (default: output.txt)')
     parser.add_argument('--format', '-m', choices=['text', 'json'], default='json',
                         help='Output format (default: text)')
+    # Image options
+    parser.add_argument('--download-images', '-d', action='store_true', default=True,
+                        help='Download images (default: True)')
+    parser.add_argument('--image-dir', '-i', default='images',
+                        help='Directory to save downloaded images (default: images)')
     return parser.parse_args()
 
 def get_html_content(args):
@@ -32,10 +38,10 @@ def get_content_from_file(file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         print(f"Read content from file: {file_path}")
-        return content
+        return content, file_path  # Use file path as base URL for resolving relative paths
     except Exception as e:
         print(f"Error reading file: {str(e)}")
-        return None
+        return None, None
 
 def get_content_from_url(url):
     """Fetch HTML content from a URL"""
@@ -43,10 +49,10 @@ def get_content_from_url(url):
         print(f"Fetching content from URL: {url}")
         content = fetch_html_from_url(url)
         print(f"Successfully fetched content ({len(content)} bytes)")
-        return content
+        return content, url
     except Exception as e:
         print(f"Error: {str(e)}")
-        return None
+        return None, None
 
 def output_formatted_content(content, args):
     """Format and output the content based on user preferences"""

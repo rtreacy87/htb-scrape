@@ -1,26 +1,34 @@
 from bs4 import BeautifulSoup
 import re
+import os
 from abc import ABC, abstractmethod
+from src.image_handler import process_image_element
 
 class BaseHTMLExtractor(ABC):
-    
-    def __init__(self, html_content):
+
+    def __init__(self, html_content, base_url=None, download_images=True, image_output_dir='images'):
         """Initialize with HTML content to parse.
         Args:
             html_content (str): HTML content as string
+            base_url (str, optional): Base URL for resolving relative image URLs
+            download_images (bool): Whether to download images
+            image_output_dir (str): Directory to save downloaded images
         """
         self.soup = BeautifulSoup(html_content, 'html.parser')
-        
+        self.base_url = base_url
+        self.download_images = download_images
+        self.image_output_dir = image_output_dir
+
     @abstractmethod
     def extract_content(self):
         """Extract content from HTML and return structured data."""
         pass
-    
+
     @abstractmethod
     def find_main_content_container(self):
         """Find the main content container in the HTML."""
         pass
-    
+
     def extract_title(self):
         """Extract the page title from various possible elements.
         Searches for the title in the following order of precedence:
@@ -42,7 +50,7 @@ class BaseHTMLExtractor(ABC):
             if element and element.text.strip():
                 return element.text.strip()
         return "Unknown Title"
-    
+
     def get_element_processor_map(self):
         """Return a mapping of HTML elements to their processor methods."""
         return {
@@ -59,18 +67,18 @@ class BaseHTMLExtractor(ABC):
             'img': self.process_image,
             'table': self.process_table
         }
-        
+
     def is_valid_element(self, element):
         """Check if element is valid for processing.
-        
+
         Args:
             element: BeautifulSoup element to validate
-        
+
         Returns:
             bool: True if element is a valid HTML element, False otherwise
         """
         return hasattr(element, 'name') and element.name is not None
-    
+
     def process_single_element(self, element, element_processors):
         """Process a single HTML element and return the processed item if successful.
         Args:
@@ -90,9 +98,9 @@ class BaseHTMLExtractor(ABC):
         if processor:
             return processor(element)
         if element.name == 'div' and 'card' in element.get('class', []):
-            return self.process_alert(element)    
+            return self.process_alert(element)
         return None
-    
+
     def process_content_elements(self, container):
         """Process all content elements in the container.
         Iterates through all direct children of the container and processes each element
@@ -100,16 +108,32 @@ class BaseHTMLExtractor(ABC):
         Args:
             container: BeautifulSoup element containing the content to process
         Returns:
-            list: List of processed content items, where each item is a dictionary 
-                 containing the structured data for that element. Invalid or 
+            list: List of processed content items, where each item is a dictionary
+                 containing the structured data for that element. Invalid or
                  unprocessable elements are filtered out.
         """
         element_processors = self.get_element_processor_map()
-        content_items = [] 
+        content_items = []
+
+        # First, find all images in the container (not just direct children)
+        print(f"Searching for images in content...")
+        all_images = container.find_all('img')
+        print(f"Found {len(all_images)} images in content")
+
+        # Process each image
+        for img in all_images:
+            processed_img = self.process_image(img)
+            if processed_img:
+                content_items.append(processed_img)
+                print(f"Processed image: {processed_img.get('src', 'unknown')}")
+
+        # Process other elements (direct children only)
         for element in container.children:
-            processed_item = self.process_single_element(element, element_processors)
-            if processed_item:
-                content_items.append(processed_item)       
+            if element.name != 'img':  # Skip images as we've already processed them
+                processed_item = self.process_single_element(element, element_processors)
+                if processed_item:
+                    content_items.append(processed_item)
+
         return content_items
 
     @staticmethod
@@ -147,7 +171,7 @@ class BaseHTMLExtractor(ABC):
     def process_alert(element):
         """Process an alert element."""
         card_text = element.text.strip()
-        if not card_text:  
+        if not card_text:
             return None
         # Normalize whitespace: replace newlines and multiple spaces with single spaces
         normalized_text = re.sub(r'\s+', ' ', card_text)
@@ -156,16 +180,16 @@ class BaseHTMLExtractor(ABC):
             "text": normalized_text
         }
 
-    @staticmethod
-    def process_image(element):
-        """Process an image element."""
-        src = element.get('src', '')
-        alt = element.get('alt', '')
-        return {
-            "type": "image",
-            "src": src,
-            "alt": alt if alt else "Image"
-        }
+    def process_image(self, element):
+        """Process an image element.
+        Uses the image_handler module to process and optionally download the image.
+        """
+        return process_image_element(
+            element,
+            base_url=self.base_url,
+            download=self.download_images,
+            output_dir=self.image_output_dir
+        )
 
     @staticmethod
     def process_paragraph(element):
@@ -178,7 +202,7 @@ class BaseHTMLExtractor(ABC):
             None: If the paragraph contains no text after stripping whitespace
         """
         text = element.text.strip()
-        if not text:  
+        if not text:
             return None
         # Normalize whitespace: replace newlines and multiple spaces with single spaces
         normalized_text = re.sub(r'\s+', ' ', text)
