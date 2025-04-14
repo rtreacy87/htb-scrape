@@ -156,6 +156,10 @@ class BaseHTMLExtractor(ABC):
             element: BeautifulSoup image element
             content_items: List to append processed item to
         """
+        # Only process images with a src attribute
+        if not element.get('src'):
+            return
+
         processed_item = self.process_image(element)
         if processed_item:
             content_items.append(processed_item)
@@ -167,10 +171,13 @@ class BaseHTMLExtractor(ABC):
             element: BeautifulSoup list item element
             content_items: List to append processed items to
         """
-        # First process the list item itself
-        processed_item = self.process_single_element(element, self.element_processors)
-        if processed_item:
-            content_items.append(processed_item)
+        # First process the list item text
+        text = element.get_text().strip()
+        if text:
+            content_items.append({
+                "type": "paragraph",
+                "text": text
+            })
         # Then look for images inside the list item
         for img in element.find_all('img', recursive=True):
             processed_img = self.process_image(img)
@@ -191,7 +198,6 @@ class BaseHTMLExtractor(ABC):
                 "type": "paragraph",
                 "text": text
             })
-
         # Process images in the cell
         for img in element.find_all('img', recursive=True):
             processed_img = self.process_image(img)
