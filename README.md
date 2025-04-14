@@ -52,7 +52,7 @@ If you prefer not to use conda, you can install the dependencies manually:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/htb-scrape.git
+git clone https://github.com/rtreacy87/htb-scrape.git
 cd htb-scrape
 
 # Create a virtual environment (optional but recommended)
