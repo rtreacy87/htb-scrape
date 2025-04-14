@@ -159,7 +159,6 @@ class BaseHTMLExtractor(ABC):
         # Only process images with a src attribute
         if not element.get('src'):
             return
-
         processed_item = self.process_image(element)
         if processed_item:
             content_items.append(processed_item)
