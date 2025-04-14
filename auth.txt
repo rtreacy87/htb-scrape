@@ -1,0 +1,6 @@
+Add Authentication to the Script
+We could modify the script to handle authentication:
+
+Add support for cookies or session management
+Use a browser automation tool like Selenium to handle the login process
+Pass your session cookies to the script

@@ -1,0 +1,12 @@
+name: scrape
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - beautifulsoup4
+  - bs4
+  - pytest
+  - requests
+  - certifi
+  - pip
