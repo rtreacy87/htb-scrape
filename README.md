@@ -28,7 +28,7 @@ This project uses a conda environment defined in the included `scrape_env.yml` f
 
 ```bash
 # Clone the repository (or download it)
-git clone https://github.com/yourusername/htb-scrape.git
+git clone https://github.com/rtreacy87/htb-scrape.git
 cd htb-scrape
 
 # Create the conda environment from the provided yml file
