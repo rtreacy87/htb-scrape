@@ -1,5 +1,8 @@
-splunk_note.json
-splunk_notes.json
 images/
 saved_page.html
-*.json
+
+# Ignore JSON files at the top level only
+/*.json
+
+# But don't ignore JSON files in the tests directory
+!/tests/**/*.json

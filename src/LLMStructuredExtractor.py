@@ -77,25 +77,22 @@ class LLMStructuredExtractor(BaseHTMLExtractor):
         Returns:
             list: List of processed content items with a hierarchical structure
         """
-        element_processors = self.get_element_processor_map()
         content_items = []
 
         # Process all elements in order by traversing the DOM tree
-        self._process_elements_in_order(container, element_processors, content_items)
+        self._process_elements_in_order(container, content_items)
 
         return content_items
 
-    def _process_elements_in_order(self, container, element_processors, content_items, depth=0, max_depth=5):
+    def _process_elements_in_order(self, container, content_items, depth=0):
         """Recursively process elements in order with a more structured approach.
 
         Args:
             container: BeautifulSoup element to process
-            element_processors: Dictionary mapping element types to processor functions
             content_items: List to append processed items to
             depth: Current recursion depth
-            max_depth: Maximum recursion depth to prevent infinite recursion
         """
-        if depth > max_depth:
+        if depth > self.max_depth:
             return
 
         # Special handling for lists (ul/ol)
@@ -184,7 +181,7 @@ class LLMStructuredExtractor(BaseHTMLExtractor):
 
             # Skip elements that are handled specially
             if element.name in ['ul', 'ol', 'table']:
-                self._process_elements_in_order(element, element_processors, content_items, depth + 1, max_depth)
+                self._process_elements_in_order(element, content_items, depth + 1)
                 continue
 
             # Process this element
@@ -193,13 +190,13 @@ class LLMStructuredExtractor(BaseHTMLExtractor):
                 if processed_item:
                     content_items.append(processed_item)
             else:
-                processed_item = self.process_single_element(element, element_processors)
+                processed_item = self.process_single_element(element, self.element_processors)
                 if processed_item:
                     content_items.append(processed_item)
 
                 # If this is a container element that might contain nested elements, process its children
                 if element.name in ['div', 'article', 'section', 'figure', 'p']:
-                    self._process_elements_in_order(element, element_processors, content_items, depth + 1, max_depth)
+                    self._process_elements_in_order(element, content_items, depth + 1)
 
 
 def extract_structured_content_from_html(html_content, base_url=None, download_images=True, image_output_dir='images'):

@@ -6,18 +6,21 @@ from src.image_handler import process_image_element
 
 class BaseHTMLExtractor(ABC):
 
-    def __init__(self, html_content, base_url=None, download_images=True, image_output_dir='images'):
+    def __init__(self, html_content, base_url=None, download_images=True, image_output_dir='images', max_depth=5):
         """Initialize with HTML content to parse.
         Args:
             html_content (str): HTML content as string
             base_url (str, optional): Base URL for resolving relative image URLs
             download_images (bool): Whether to download images
             image_output_dir (str): Directory to save downloaded images
+            max_depth (int): Maximum recursion depth for processing nested elements
         """
         self.soup = BeautifulSoup(html_content, 'html.parser')
         self.base_url = base_url
         self.download_images = download_images
         self.image_output_dir = image_output_dir
+        self.max_depth = max_depth
+        self.element_processors = self.get_element_processor_map()
 
     @abstractmethod
     def extract_content(self):
@@ -70,10 +73,8 @@ class BaseHTMLExtractor(ABC):
 
     def is_valid_element(self, element):
         """Check if element is valid for processing.
-
         Args:
             element: BeautifulSoup element to validate
-
         Returns:
             bool: True if element is a valid HTML element, False otherwise
         """
@@ -111,78 +112,114 @@ class BaseHTMLExtractor(ABC):
                  containing the structured data for that element. Invalid or
                  unprocessable elements are filtered out.
         """
-        element_processors = self.get_element_processor_map()
         content_items = []
-
         # Process all elements in order by traversing the DOM tree
-        self._process_elements_in_order(container, element_processors, content_items)
-
+        self._process_elements_in_order(container, content_items)
         return content_items
 
-    def _process_elements_in_order(self, container, element_processors, content_items, depth=0, max_depth=5):
+    def _process_elements_in_order(self, container, content_items, depth=0):
         """Recursively process elements in order.
-
         Args:
             container: BeautifulSoup element to process
-            element_processors: Dictionary mapping element types to processor functions
             content_items: List to append processed items to
             depth: Current recursion depth
-            max_depth: Maximum recursion depth to prevent infinite recursion
         """
-        if depth > max_depth:
+        if self._should_stop_recursion(depth):
             return
-
         # Process direct children in order
         for element in container.children:
             if not hasattr(element, 'name') or not element.name:
                 continue
-
-            # Process this element
+            # Process this element based on its type
             if element.name == 'img':
-                processed_item = self.process_image(element)
-                if processed_item:
-                    content_items.append(processed_item)
-                    print(f"Processed image: {processed_item.get('src', 'unknown')}")
+                self._process_image_element(element, content_items)
+            elif element.name == 'li':
+                self._process_list_item(element, content_items)
+            elif element.name == 'td' or element.name == 'th':
+                self._process_table_cell(element, content_items)
             else:
-                # Special handling for list items to capture images inside them
-                if element.name == 'li':
-                    # First process the list item itself
-                    processed_item = self.process_single_element(element, element_processors)
-                    if processed_item:
-                        content_items.append(processed_item)
+                self._process_standard_element(element, content_items)
+            self._process_container_children(element, content_items, depth)
 
-                    # Then look for images inside the list item
-                    for img in element.find_all('img', recursive=True):
-                        processed_img = self.process_image(img)
-                        if processed_img:
-                            content_items.append(processed_img)
-                            print(f"Processed image in list item: {processed_img.get('src', 'unknown')}")
-                # Special handling for table cells
-                elif element.name == 'td' or element.name == 'th':
-                    # Process text content
-                    text = element.get_text().strip()
-                    if text:
-                        content_items.append({
-                            "type": "paragraph",
-                            "text": text
-                        })
+    def _should_stop_recursion(self, depth):
+        """Check if recursion should stop based on depth.
+        Args:
+            depth: Current recursion depth
+        Returns:
+            bool: True if recursion should stop, False otherwise
+        """
+        return depth > self.max_depth
 
-                    # Process images in the cell
-                    for img in element.find_all('img', recursive=True):
-                        processed_img = self.process_image(img)
-                        if processed_img:
-                            content_items.append(processed_img)
-                            print(f"Processed image in table cell: {processed_img.get('src', 'unknown')}")
-                else:
-                    # Standard processing for other elements
-                    processed_item = self.process_single_element(element, element_processors)
-                    if processed_item:
-                        content_items.append(processed_item)
+    def _process_image_element(self, element, content_items):
+        """Process an image element and add it to content items.
+        Args:
+            element: BeautifulSoup image element
+            content_items: List to append processed item to
+        """
+        processed_item = self.process_image(element)
+        if processed_item:
+            content_items.append(processed_item)
+            print(f"Processed image: {processed_item.get('src', 'unknown')}")
 
-                # If this is a container element that might contain images, process its children
-                # Expanded list of container elements
-                if element.name in ['div', 'article', 'section', 'figure', 'p', 'table', 'tr', 'ul', 'ol']:
-                    self._process_elements_in_order(element, element_processors, content_items, depth + 1, max_depth)
+    def _process_list_item(self, element, content_items):
+        """Process a list item element and its contained images.
+        Args:
+            element: BeautifulSoup list item element
+            content_items: List to append processed items to
+        """
+        # First process the list item itself
+        processed_item = self.process_single_element(element, self.element_processors)
+        if processed_item:
+            content_items.append(processed_item)
+        # Then look for images inside the list item
+        for img in element.find_all('img', recursive=True):
+            processed_img = self.process_image(img)
+            if processed_img:
+                content_items.append(processed_img)
+                print(f"Processed image in list item: {processed_img.get('src', 'unknown')}")
+
+    def _process_table_cell(self, element, content_items):
+        """Process a table cell element and its contained images.
+        Args:
+            element: BeautifulSoup table cell element (td or th)
+            content_items: List to append processed items to
+        """
+        # Process text content
+        text = element.get_text().strip()
+        if text:
+            content_items.append({
+                "type": "paragraph",
+                "text": text
+            })
+
+        # Process images in the cell
+        for img in element.find_all('img', recursive=True):
+            processed_img = self.process_image(img)
+            if processed_img:
+                content_items.append(processed_img)
+                print(f"Processed image in table cell: {processed_img.get('src', 'unknown')}")
+
+    def _process_standard_element(self, element, content_items):
+        """Process a standard element using the appropriate processor.
+        Args:
+            element: BeautifulSoup element
+            content_items: List to append processed item to
+        """
+        processed_item = self.process_single_element(element, self.element_processors)
+        if processed_item:
+            content_items.append(processed_item)
+
+    def _process_container_children(self, element, content_items, depth):
+        """Process children of container elements recursively.
+        Args:
+            element: BeautifulSoup element to check if it's a container
+            content_items: List to append processed items to
+            depth: Current recursion depth
+        """
+        # If this is a container element that might contain images, process its children
+        # Expanded list of container elements
+        if element.name in ['div', 'article', 'section', 'figure', 'p', 'table', 'tr', 'ul', 'ol']:
+            self._process_elements_in_order(element, content_items, depth + 1)
 
     @staticmethod
     def process_heading(element):

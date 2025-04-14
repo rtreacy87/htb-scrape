@@ -1,0 +1,251 @@
+{
+  "title": "Using Splunk Applications",
+  "content": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "Using Splunk Applications"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Splunk Applications"
+    },
+    {
+      "type": "paragraph",
+      "text": "Splunk applications, or apps, are packages that we add to our Splunk Enterprise or Splunk Cloud deployments to extend capabilities and manage specific types of operational data. Each application is tailored to handle data from specific technologies or use cases, effectively acting as a pre-built knowledge package for that data. Apps can provide capabilities ranging from custom data inputs, custom visualizations, dashboards, alerts, reports, and more."
+    },
+    {
+      "type": "paragraph",
+      "text": "Splunk Apps enable the coexistence of multiple workspaces on a single Splunk instance, catering to different use cases and user roles. These ready-made apps can be found on Splunkbase."
+    },
+    {
+      "type": "paragraph",
+      "text": "As an integral part of our cybersecurity operations, the Splunk apps designed for Security Information and Event Management (SIEM) purposes provide a range of capabilities to enhance our ability to detect, investigate, and respond to threats. They are designed to ingest, analyze, and visualize security-related data, enabling us to detect complex threats and perform in-depth investigations."
+    },
+    {
+      "type": "paragraph",
+      "text": "When using these apps in our Splunk environment, we need to consider factors such as data volume, hardware requirements, and licensing. Many apps can be resource-intensive, so we must ensure our Splunk deployment is sized correctly to handle the additional workload. Further, it's also important to ensure we have the correct licenses for any premium apps, and that we are aware of the potential for increased license usage due to the added data inputs."
+    },
+    {
+      "type": "paragraph",
+      "text": "In this segment, we'll be leveraging the Sysmon App for Splunk developed by Mike Haag."
+    },
+    {
+      "type": "paragraph",
+      "text": "To download, add, and use this application, follow the steps delineated below:"
+    },
+    {
+      "type": "list",
+      "list_type": "ordered",
+      "items": [
+        [
+          {
+            "type": "text",
+            "content": "Sign up for a free account at splunkbase"
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/116.png",
+            "alt": "Image",
+            "local_path": null
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "content": "Once registered, log into your account"
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "content": "Head over to the Sysmon App for Splunk page to download the application."
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/117.png",
+            "alt": "Image",
+            "local_path": null
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "content": "Add the application as follows to your search head."
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/118.png",
+            "alt": "Image",
+            "local_path": null
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/119.png",
+            "alt": "Image",
+            "local_path": null
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/120.png",
+            "alt": "Image",
+            "local_path": null
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "content": "Adjust the application's macro so that events are loaded as follows."
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/121.png",
+            "alt": "Image",
+            "local_path": null
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/122.png",
+            "alt": "Image",
+            "local_path": null
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/123.png",
+            "alt": "Image",
+            "local_path": null
+          },
+          {
+            "type": "image",
+            "src": "./saved_page_files/124.png",
+            "alt": "Image",
+            "local_path": null
+          }
+        ]
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Let's access the Sysmon App for Splunk by locating it in the \"Apps\" column on the Splunk home page and head over to the File Activity tab."
+    },
+    {
+      "type": "image",
+      "src": "./saved_page_files/125.png",
+      "alt": "Image",
+      "local_path": null
+    },
+    {
+      "type": "paragraph",
+      "text": "Let's now specify \"All time\" on the time picker and click \"Submit\". Results are generated successfully; however, no results are appearing in the \"Top Systems\" section."
+    },
+    {
+      "type": "image",
+      "src": "./saved_page_files/126.png",
+      "alt": "Image",
+      "local_path": null
+    },
+    {
+      "type": "paragraph",
+      "text": "We can fix that by clicking on \"Edit\" (upper right hand corner of the screen) and editing the search."
+    },
+    {
+      "type": "image",
+      "src": "./saved_page_files/127.png",
+      "alt": "Image",
+      "local_path": null
+    },
+    {
+      "type": "paragraph",
+      "text": "The Sysmon Events with ID 11 do not contain a field named Computer, but they do include a field called ComputerName. Let's fix that and click \"Apply\""
+    },
+    {
+      "type": "image",
+      "src": "./saved_page_files/128.png",
+      "alt": "Image",
+      "local_path": null
+    },
+    {
+      "type": "paragraph",
+      "text": "Results should now be generated successfully in the \"Top Systems\" section."
+    },
+    {
+      "type": "image",
+      "src": "./saved_page_files/129.png",
+      "alt": "Image",
+      "local_path": null
+    },
+    {
+      "type": "alert",
+      "text": "Feel free to explore and experiment with this Splunk application. An excellent exercise is to modify the searches when no results are generated due to non-existent fields being specified, continuing until the desired results are obtained."
+    },
+    {
+      "type": "paragraph",
+      "text": "Feel free to explore and experiment with this Splunk application. An excellent exercise is to modify the searches when no results are generated due to non-existent fields being specified, continuing until the desired results are obtained."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Practical Exercises"
+    },
+    {
+      "type": "paragraph",
+      "text": "Navigate to the bottom of this section and click on Click here to spawn the target system!"
+    },
+    {
+      "type": "paragraph",
+      "text": "Now, navigate to http://[Target IP]:8000, open the Sysmon App for Splunk application, and answer the questions below."
+    },
+    {
+      "type": "paragraph",
+      "text": "VPN Servers"
+    },
+    {
+      "type": "paragraph",
+      "text": "Warning: Each time you \"Switch\", your connection keys are regenerated and you must re-download your VPN connection file."
+    },
+    {
+      "type": "paragraph",
+      "text": "All VM instances associated with the old VPN Server will be terminated when switching to a new VPN server. Existing PwnBox instances will automatically switch to the new VPN server."
+    },
+    {
+      "type": "paragraph",
+      "text": "PROTOCOL"
+    },
+    {
+      "type": "heading",
+      "level": 1,
+      "text": ""
+    },
+    {
+      "type": "heading",
+      "level": 1,
+      "text": ""
+    },
+    {
+      "type": "paragraph",
+      "text": "/ 1 spawns left"
+    },
+    {
+      "type": "alert",
+      "text": "Questions Answer the question(s) below to complete this Section and earn cubes! Click here to spawn the target system! Target(s): Click here to spawn the target system! Life Left: 0 minute(s) Terminate Download VPN Connection File + 1 Access the Sysmon App for Splunk and go to the \"Reports\" tab. Fix the search associated with the \"Net - net view\" report and provide the complete executed command as your answer. Answer format: net view /Domain:_.local +10 Streak pts Submit Hint Show Solution + 1 Access the Sysmon App for Splunk, go to the \"Network Activity\" tab, and choose \"Network Connections\". Fix the search and provide the number of connections that SharpHound.exe has initiated as your answer. +10 Streak pts Submit Show Solution"
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "Questions"
+    },
+    {
+      "type": "paragraph",
+      "text": "Answer the question(s) below to complete this Section and earn cubes!"
+    },
+    {
+      "type": "paragraph",
+      "text": "Target(s): Click here to spawn the target system!"
+    }
+  ],
+  "questions": [
+    "Access the Sysmon App for Splunk and go to the \"Reports\" tab. Fix the search associated with the \"Net - net view\" report and provide the complete executed command as your answer. Answer format: net view /Domain:_.local",
+    "Access the Sysmon App for Splunk, go to the \"Network Activity\" tab, and choose \"Network Connections\". Fix the search and provide the number of connections that SharpHound.exe has initiated as your answer."
+  ]
+}
