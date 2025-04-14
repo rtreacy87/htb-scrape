@@ -1,6 +1,8 @@
-def format_for_llm(extracted_content):
+def format_for_llm_structured(extracted_content):
     """
     Convert the structured content into a plain text format that's easy for LLMs to process
+    
+    This formatter handles the hierarchical structure created by LLMStructuredExtractor
     """
     output_lines = []
     output_lines.extend(format_title(extracted_content))
@@ -30,9 +32,9 @@ def get_formatter_for_type(item_type):
         "heading": format_heading,
         "paragraph": format_paragraph,
         "code": format_code_block,
-        "list": format_list,
+        "list": format_structured_list,
         "image": format_image,
-        "table": format_table,
+        "table": format_structured_table,
         "alert": format_alert
     }
     return formatters.get(item_type)
@@ -51,12 +53,31 @@ def format_code_block(item):
     language = item["language"] if item["language"] else ""
     return [f"```{language}", item["text"], "```", ""]
 
-def format_list(item):
-    """Format a list item"""
+def format_structured_list(item):
+    """Format a structured list item with embedded images"""
     result = []
+    list_type = item["list_type"]
+    
     for i, list_item in enumerate(item["items"]):
-        prefix = f"{i+1}." if item["list_type"] == "ordered" else "-"
-        result.append(f"{prefix} {list_item}")
+        # Each list item is an array of content elements
+        prefix = f"{i+1}." if list_type == "ordered" else "-"
+        
+        # Process the first element (usually text)
+        if list_item and list_item[0]["type"] == "text":
+            result.append(f"{prefix} {list_item[0]['content']}")
+        else:
+            result.append(f"{prefix} ")
+        
+        # Process any additional elements (usually images)
+        for j in range(1, len(list_item)):
+            sub_item = list_item[j]
+            if sub_item["type"] == "image":
+                # Format the image with indentation
+                image_lines = format_image(sub_item)
+                for line in image_lines:
+                    if line:  # Skip empty lines
+                        result.append(f"  {line}")
+    
     result.append("")
     return result
 
@@ -66,30 +87,34 @@ def format_image(item):
     if 'local_path' in item and item['local_path']:
         # Use the local path if available
         image_ref = item['local_path']
-        filename = image_ref.split('/')[-1].split('\\')[-1]  # Handle both Unix and Windows paths
         return [f"![{item['alt']}]({image_ref})", ""]
     else:
         # Fall back to just showing the filename from the source URL
-        filename = item['src'].split('/')[-1]
+        filename = item['src'].split('/')[-1] 
         return [f"[Image: {item['alt']} ({filename})]", ""]
 
-def fill_in_table(item):
-    """Fill in table item"""
-    result = []
-    if item.get("headers"):
-        result.append("| " + " | ".join(item["headers"]) + " |")
-        result.append("| " + " | ".join(["---"] * len(item["headers"])) + " |")
-    if item.get("rows"):
-        for row in item["rows"]:
-            result.append("| " + " | ".join(str(cell) for cell in row) + " |")
+def format_structured_table(item):
+    """Format a structured table item with embedded images"""
+    result = ["", "| Table Content |", "| ------------- |"]
+    
+    for row in item["rows"]:
+        row_content = []
+        for cell in row:
+            cell_text = []
+            for element in cell:
+                if element["type"] == "text":
+                    cell_text.append(element["content"])
+                elif element["type"] == "image":
+                    if 'local_path' in element and element['local_path']:
+                        cell_text.append(f"![{element['alt']}]({element['local_path']})")
+                    else:
+                        filename = element['src'].split('/')[-1]
+                        cell_text.append(f"[Image: {element['alt']} ({filename})]")
+            row_content.append(" ".join(cell_text))
+        
+        result.append(f"| {' | '.join(row_content)} |")
+    
     result.append("")
-    return result
-
-def format_table(item):
-    """Format a table item"""
-    if not item.get("headers") and not item.get("rows"):
-        return ["[Empty table]", "No headers or rows provided"]
-    result = fill_in_table(item)
     return result
 
 def format_alert(item):

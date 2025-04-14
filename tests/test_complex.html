@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complex Element Order Test</title>
+</head>
+<body>
+    <h1>Complex Element Order Test</h1>
+    <p>This is a test page with complex nesting to verify element order preservation.</p>
+    
+    <div class="content">
+        <h2>Section 1: Basic Elements</h2>
+        <p>This is a paragraph before an image.</p>
+        <img src="image/116.webp" alt="Image 1">
+        <p>This is a paragraph after an image.</p>
+        
+        <h2>Section 2: Nested Elements</h2>
+        <div class="card">
+            <h3>Card Title</h3>
+            <p>This is content inside a card.</p>
+            <div class="card-image">
+                <img src="image/116.webp" alt="Image 2">
+                <p class="caption">This is a caption for the image.</p>
+            </div>
+            <p>More content after the image in the card.</p>
+        </div>
+        
+        <h2>Section 3: Lists with Images</h2>
+        <ul>
+            <li>
+                <p>First list item</p>
+                <img src="image/116.webp" alt="Image 3">
+            </li>
+            <li>
+                <p>Second list item</p>
+                <img src="image/116.webp" alt="Image 4">
+            </li>
+        </ul>
+        
+        <h2>Section 4: Tables with Images</h2>
+        <table>
+            <tr>
+                <td>
+                    <p>Cell 1</p>
+                    <img src="image/116.webp" alt="Image 5">
+                </td>
+                <td>
+                    <p>Cell 2</p>
+                    <img src="image/116.webp" alt="Image 6">
+                </td>
+            </tr>
+        </table>
+        
+        <h2>Section 5: Deeply Nested</h2>
+        <div class="outer">
+            <div class="middle">
+                <div class="inner">
+                    <p>Deeply nested paragraph</p>
+                    <img src="image/116.webp" alt="Image 7">
+                    <p>After deeply nested image</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

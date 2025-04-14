@@ -6,12 +6,18 @@ A Python tool for extracting and formatting content from HackTheBox Academy HTML
 
 HTB-Scrape is a utility that extracts structured content from HackTheBox Academy HTML pages and converts it into clean, formatted text or JSON. It's designed to help users extract learning materials in a format that's easy to read, study, or process with language models.
 
+## Overview
+
+HTB-Scrape is designed specifically for LLM consumption. It creates a hierarchical structure where images are embedded within their parent elements (lists, table cells, etc.), making it easier for LLMs to understand the relationships between text and images.
+
 ## Features
 
 - Extract content from local HTML files or directly from URLs
 - Parse HackTheBox Academy's specific HTML structure
 - Extract various content types (headings, paragraphs, code blocks, lists, images, tables, alerts)
 - Download and save images from HTML content
+- Maintain proper order of elements including images
+- Create LLM-friendly structured output with embedded images
 - Extract questions from modules
 - Output in plain text (formatted for readability) or JSON
 - Modular and extensible design
@@ -89,7 +95,7 @@ python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --
 
 ### Example Output
 
-The tool extracts content and formats it in a clean, readable way:
+#### Text Format
 
 ```
 # Introduction to Web Applications
@@ -101,6 +107,7 @@ Web applications are computer programs that run on web servers and are accessed 
 Web applications typically consist of:
 
 - Front-end (client-side)
+  ![Architecture diagram](images/architecture.png)
 - Back-end (server-side)
 - Database
 
@@ -109,23 +116,82 @@ Web applications typically consist of:
 Question 1: What is the primary language used for front-end web development?
 ```
 
+#### JSON Format
+
+```json
+{
+  "title": "Introduction to Web Applications",
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "Web applications are computer programs that run on web servers and are accessed through web browsers..."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Web Application Architecture"
+    },
+    {
+      "type": "paragraph",
+      "text": "Web applications typically consist of:"
+    },
+    {
+      "type": "list",
+      "list_type": "unordered",
+      "items": [
+        [
+          {
+            "type": "text",
+            "content": "Front-end (client-side)"
+          },
+          {
+            "type": "image",
+            "src": "architecture.png",
+            "alt": "Architecture diagram",
+            "local_path": "images/architecture.png"
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "content": "Back-end (server-side)"
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "content": "Database"
+          }
+        ]
+      ]
+    }
+  ],
+  "questions": [
+    "What is the primary language used for front-end web development?"
+  ]
+}
+```
+
 ## Project Structure
 
 ```
 htb-scrape/
-├── htb_scraper.py          # Main script
+├── htb_scraper.py                  # Main scraper script
 ├── src/
-│   ├── BaseHTMLExtractor.py    # Abstract base class for HTML extraction
-│   ├── HTBHTMLExtractor.py     # HackTheBox specific extractor
-│   ├── fetch_html_from_url.py  # URL fetching utilities
-│   ├── format_for_llm.py       # Formatting utilities
-│   └── main_functions.py       # Core functionality
-├── tests/                  # Unit tests
-│   ├── test_BaseHTMLExtractor.py
-│   ├── test_HTBHTMLExtractor.py
-│   └── test_format_for_llm.py
-├── scrape_env.yml          # Conda environment file
-└── README.md               # This file
+│   ├── BaseHTMLExtractor.py        # Abstract base class for HTML extraction
+│   ├── LLMStructuredExtractor.py   # LLM-friendly structured extractor
+│   ├── fetch_html_from_url.py      # URL fetching utilities
+│   ├── format_for_llm_structured.py # Formatting for LLM with embedded images
+│   ├── image_handler.py            # Image downloading and processing
+│   └── main_functions.py           # Core functionality
+├── tests/                      # Unit tests and test files
+│   ├── image/                      # Test images
+│   ├── test_image.html             # Test HTML with images
+│   └── test_complex.html           # Complex test HTML for structure testing
+├── images/                     # Downloaded images directory
+├── .gitignore                  # Git ignore file
+├── scrape_env.yml              # Conda environment file
+└── README.md                   # This file
 ```
 
 ## License

@@ -103,8 +103,7 @@ class BaseHTMLExtractor(ABC):
 
     def process_content_elements(self, container):
         """Process all content elements in the container.
-        Iterates through all direct children of the container and processes each element
-        using the appropriate processor from the element_processors map.
+        Iterates through elements in the container and processes them in order.
         Args:
             container: BeautifulSoup element containing the content to process
         Returns:
@@ -115,26 +114,75 @@ class BaseHTMLExtractor(ABC):
         element_processors = self.get_element_processor_map()
         content_items = []
 
-        # First, find all images in the container (not just direct children)
-        print(f"Searching for images in content...")
-        all_images = container.find_all('img')
-        print(f"Found {len(all_images)} images in content")
-
-        # Process each image
-        for img in all_images:
-            processed_img = self.process_image(img)
-            if processed_img:
-                content_items.append(processed_img)
-                print(f"Processed image: {processed_img.get('src', 'unknown')}")
-
-        # Process other elements (direct children only)
-        for element in container.children:
-            if element.name != 'img':  # Skip images as we've already processed them
-                processed_item = self.process_single_element(element, element_processors)
-                if processed_item:
-                    content_items.append(processed_item)
+        # Process all elements in order by traversing the DOM tree
+        self._process_elements_in_order(container, element_processors, content_items)
 
         return content_items
+
+    def _process_elements_in_order(self, container, element_processors, content_items, depth=0, max_depth=5):
+        """Recursively process elements in order.
+
+        Args:
+            container: BeautifulSoup element to process
+            element_processors: Dictionary mapping element types to processor functions
+            content_items: List to append processed items to
+            depth: Current recursion depth
+            max_depth: Maximum recursion depth to prevent infinite recursion
+        """
+        if depth > max_depth:
+            return
+
+        # Process direct children in order
+        for element in container.children:
+            if not hasattr(element, 'name') or not element.name:
+                continue
+
+            # Process this element
+            if element.name == 'img':
+                processed_item = self.process_image(element)
+                if processed_item:
+                    content_items.append(processed_item)
+                    print(f"Processed image: {processed_item.get('src', 'unknown')}")
+            else:
+                # Special handling for list items to capture images inside them
+                if element.name == 'li':
+                    # First process the list item itself
+                    processed_item = self.process_single_element(element, element_processors)
+                    if processed_item:
+                        content_items.append(processed_item)
+
+                    # Then look for images inside the list item
+                    for img in element.find_all('img', recursive=True):
+                        processed_img = self.process_image(img)
+                        if processed_img:
+                            content_items.append(processed_img)
+                            print(f"Processed image in list item: {processed_img.get('src', 'unknown')}")
+                # Special handling for table cells
+                elif element.name == 'td' or element.name == 'th':
+                    # Process text content
+                    text = element.get_text().strip()
+                    if text:
+                        content_items.append({
+                            "type": "paragraph",
+                            "text": text
+                        })
+
+                    # Process images in the cell
+                    for img in element.find_all('img', recursive=True):
+                        processed_img = self.process_image(img)
+                        if processed_img:
+                            content_items.append(processed_img)
+                            print(f"Processed image in table cell: {processed_img.get('src', 'unknown')}")
+                else:
+                    # Standard processing for other elements
+                    processed_item = self.process_single_element(element, element_processors)
+                    if processed_item:
+                        content_items.append(processed_item)
+
+                # If this is a container element that might contain images, process its children
+                # Expanded list of container elements
+                if element.name in ['div', 'article', 'section', 'figure', 'p', 'table', 'tr', 'ul', 'ol']:
+                    self._process_elements_in_order(element, element_processors, content_items, depth + 1, max_depth)
 
     @staticmethod
     def process_heading(element):
