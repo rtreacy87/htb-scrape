@@ -1,12 +1,12 @@
 from src.LLMStructuredExtractor import extract_structured_content_from_html
 from src.format_for_llm_structured import format_for_llm_structured
-import src.main_functions as mf
+import src.htb_scraper_utils as su
 import json
 
 def main():
     """Main function to coordinate the content extraction process with LLM-friendly structure"""
-    args = mf.parse_arguments()
-    html_content, base_url = mf.get_html_content(args)
+    args = su.parse_arguments()
+    html_content, base_url = su.get_html_content(args)
     if html_content is None:
         return
 
@@ -31,7 +31,7 @@ def main():
 
     # Write to output file or print to console
     if args.output:
-        mf.write_to_file(formatted_content, args.output)
+        su.write_to_file(formatted_content, args.output)
     else:
         print(formatted_content)
 

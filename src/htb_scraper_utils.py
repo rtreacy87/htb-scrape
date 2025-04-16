@@ -1,20 +1,6 @@
 import json
 import argparse
-import os
-import requests
-from urllib.parse import urlparse
-# Import extractors to support both scrapers
-try:
-    from src.HTBHTMLExtractor import extract_content_from_html
-except ImportError:
-    # If HTBHTMLExtractor is not available, use LLMStructuredExtractor instead
-    from src.LLMStructuredExtractor import extract_structured_content_from_html as extract_content_from_html
-# Import both formatters to support both scrapers
-try:
-    from src.format_for_llm import format_for_llm
-except ImportError:
-    # If format_for_llm is not available, use format_for_llm_structured instead
-    from src.format_for_llm_structured import format_for_llm_structured as format_for_llm
+from src.format_for_llm_structured import format_for_llm_structured as format_for_llm
 from src.fetch_html_from_url import fetch_html_from_url
 
 def parse_arguments():

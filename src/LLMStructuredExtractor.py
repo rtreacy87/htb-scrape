@@ -136,7 +136,6 @@ class LLMStructuredExtractor(BaseHTMLExtractor):
         """Process the content of a list item, including text and images.
         Args:
             list_item: BeautifulSoup list item element
-
         Returns:
             list: List of content items in the list item
         """
@@ -252,13 +251,11 @@ class LLMStructuredExtractor(BaseHTMLExtractor):
 
 def extract_structured_content_from_html(html_content, base_url=None, download_images=True, image_output_dir='images'):
     """Helper function to extract structured content from HTML for LLM consumption.
-
     Args:
         html_content (str): HTML content to parse
         base_url (str, optional): Base URL for resolving relative image URLs
         download_images (bool): Whether to download images
         image_output_dir (str): Directory to save downloaded images
-
     Returns:
         dict: Extracted content with a hierarchical structure
     """
