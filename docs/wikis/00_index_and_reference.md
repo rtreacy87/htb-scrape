@@ -49,6 +49,11 @@ Welcome to the HTB-Scraper Authentication Implementation Wiki series! This index
    - Usage examples for different scenarios
    - Project structure overview
 
+10. [Google Sign-In Authentication](10_google_signin_authentication.md)
+   - Implementing Google Sign-In for HackTheBox
+   - Browser automation with Selenium
+   - Handling Google's authentication flow
+
 ## Quick Reference
 
 ### Command-Line Options
@@ -58,6 +63,8 @@ Welcome to the HTB-Scraper Authentication Implementation Wiki series! This index
 | `--auth` | Enable authentication for password-protected sites |
 | `--username USERNAME` | Username for authentication |
 | `--no-keyring` | Disable keyring for credential storage |
+| `--auth-method {password,google}` | Authentication method (default: password) |
+| `--headless` | Run browser in headless mode for Google authentication |
 
 ### Usage Examples
 
@@ -74,6 +81,21 @@ python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --
 Authentication without keyring:
 ```bash
 python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --auth --username your.email@example.com --no-keyring
+```
+
+Google Sign-In authentication:
+```bash
+python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --auth --auth-method google
+```
+
+Google Sign-In with username:
+```bash
+python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --auth --auth-method google --username your.email@gmail.com
+```
+
+Google Sign-In in headless mode:
+```bash
+python htb_scraper.py --url https://academy.hackthebox.com/module/details/123 --auth --auth-method google --headless
 ```
 
 ### Key Files
